@@ -140,8 +140,14 @@ pub async fn http_server(
     server.await
 }
 
+#[derive(Deserialize)]
+pub struct SseQuery {
+    pub endpoint: Option<String>,
+}
+
 pub async fn sse_handler(
     req: actix_web::HttpRequest,
+    query: actix_web::web::Query<SseQuery>,
     session_state: web::Data<SessionState>,
 ) -> HttpResponse {
     let endpoint = req.extensions().get::<Endpoint>().cloned();
@@ -169,14 +175,20 @@ pub async fn sse_handler(
         .unwrap()
         .insert(session_id.clone(), transport.clone());
 
-    debug!(
+    info!(
         "SSE connection established for {} with session_id {}",
         client_ip, session_id
     );
-    let endpoint = endpoint.map_or(session_state.endpoint.clone(), |e| e.0);
+    let endpoint = match &query.endpoint {
+        Some(endpoint) => endpoint.clone(),
+        None => endpoint.map_or(session_state.endpoint.clone(), |e| e.0.clone()),
+    };
+    
     // Create initial endpoint info event
     let endpoint_info =
         format!("event: endpoint\ndata: {endpoint}/message?sessionId={session_id}\n\n",);
+
+    info!("Endpoint: {}", endpoint_info);
 
     let stream = futures::stream::once(async move {
         Ok::<_, std::convert::Infallible>(web::Bytes::from(endpoint_info))
