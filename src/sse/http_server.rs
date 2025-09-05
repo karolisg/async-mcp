@@ -183,7 +183,7 @@ pub async fn sse_handler(
         Some(endpoint) => endpoint.clone(),
         None => endpoint.map_or(session_state.endpoint.clone(), |e| e.0.clone()),
     };
-    
+
     // Create initial endpoint info event
     let endpoint_info =
         format!("event: endpoint\ndata: {endpoint}/message?sessionId={session_id}\n\n",);

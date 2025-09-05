@@ -99,7 +99,7 @@ impl Transport for ClientStdioTransport {
         } else {
             line.clone()
         };
-        
+
         debug!("ClientStdioTransport: Received from process: {}", row);
         let message: Message = serde_json::from_str(&line).map_err(|e| {
             tracing::error!("Failed to parse message: {}", e);

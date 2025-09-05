@@ -102,7 +102,7 @@ impl Transport for ServerSseTransport {
         } else {
             debug!("Sending chunked SSE message: {}", formatted);
         }
-        
+
         self.sse_tx.send(message.clone())?;
         Ok(())
     }
